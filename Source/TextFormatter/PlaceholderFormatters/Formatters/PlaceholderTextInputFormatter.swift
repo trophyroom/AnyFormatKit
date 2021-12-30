@@ -19,21 +19,21 @@ open class PlaceholderTextInputFormatter: TextInputFormatter, TextFormatter, Tex
     // MARK: - Properties
     
     var textPattern: String { textFormatter.textPattern }
-    var patternSymbol: Character { textFormatter.patternSymbol }
+    var patternSymbols: [Character] { textFormatter.patternSymbols }
     
     // MARK: - Life cycle
     
     public init(
         textPattern: String,
-        patternSymbol: Character = "#"
+        patternSymbols: [Character] = ["#"]
     ) {
         self.caretPositionCorrector = PlaceholderCaretPositionCalculator(
             textPattern: textPattern,
-            patternSymbol: patternSymbol
+            patternSymbols: patternSymbols
         )
         self.textFormatter = PlaceholderTextFormatter(
             textPattern: textPattern,
-            patternSymbol: patternSymbol
+            patternSymbols: patternSymbols
         )
         self.stringCalculator = StringCalculator()
     }

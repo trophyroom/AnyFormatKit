@@ -12,14 +12,14 @@ class PlaceholderCaretPositionCalculator {
     
     // MARK: - Properties
     let textPattern: String
-    let patternSymbol: Character
-    private let defaultFormatter: DefaultTextFormatter
+    let patternSymbols: [Character]
+//    private let defaultFormatter: DefaultTextFormatter
     
     // MARK: - Life Cycle
-    init(textPattern: String, patternSymbol: Character) {
+    init(textPattern: String, patternSymbols: [Character]) {
         self.textPattern = textPattern
-        self.patternSymbol = patternSymbol
-        self.defaultFormatter = DefaultTextFormatter(textPattern: textPattern, patternSymbol: patternSymbol)
+        self.patternSymbols = patternSymbols
+//        self.defaultFormatter = DefaultTextFormatter(textPattern: textPattern, patternSymbol: patternSymbol)
     }
     
     func calculateCaretPositionOffset(currentText: String) -> Int {
@@ -39,16 +39,33 @@ class PlaceholderCaretPositionCalculator {
     
     private func offsetForRemove(newText: String, lowerBound: String.Index) -> Int {
         let textPatternLowerBound = textPattern.getSameIndex(asIn: newText, sourceIndex: lowerBound)
-        let textPatternIndex = textPattern.findIndexBefore(of: patternSymbol, startFrom: textPatternLowerBound)
-        let index = newText.getSameIndex(asIn: textPattern, sourceIndex: textPatternIndex)
+        
+        var index = newText.startIndex
+        for symbol in patternSymbols.reversed() {
+            let textPatternIndex = textPattern.findIndexBefore(of: symbol, startFrom: textPatternLowerBound)
+            index = newText.getSameIndex(asIn: textPattern, sourceIndex: textPatternIndex)
+            if index != newText.startIndex {
+                break
+            }
+        }
+        
         let leftSlice = newText.leftSlice(end: index)
         return leftSlice.utf16Length
     }
     
     private func offsetForInsert(newText: String, lowerBound: String.Index, replacementLength: Int) -> Int {
         let textPatternLowerBound = textPattern.getSameIndex(asIn: newText, sourceIndex: lowerBound)
-        let textPatternIndex = textPattern.findIndex(of: patternSymbol, skipFirst: replacementLength, startFrom: textPatternLowerBound)
-        let index = newText.getSameIndex(asIn: textPattern, sourceIndex: textPatternIndex)
+        
+        var textPatternIndex = textPattern.endIndex
+        var index = newText.endIndex
+        for symbol in patternSymbols {
+            textPatternIndex = textPattern.findIndex(of: symbol, skipFirst: replacementLength, startFrom: textPatternLowerBound)
+            index = newText.getSameIndex(asIn: textPattern, sourceIndex: textPatternIndex)
+            if index != newText.endIndex {
+                break
+            }
+        }
+        
         let leftSlice = newText.leftSlice(end: index)
         let textPatternLeftSlice = textPattern.leftSlice(end: textPatternIndex)
         let diff = leftSlice.getRemovingMatches(toMatch: textPatternLeftSlice)

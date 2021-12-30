@@ -16,7 +16,7 @@ open class PlaceholderTextFormatter: TextFormatter, TextUnformatter {
   public let textPattern: String
   
   /// Symbol that will be replace by input symbols
-  public let patternSymbol: Character
+  public let patternSymbols: [Character]
   
   // MARK: - Life cycle
   
@@ -29,10 +29,10 @@ open class PlaceholderTextFormatter: TextFormatter, TextUnformatter {
    */
   public init(
     textPattern: String,
-    patternSymbol: Character = "#"
+    patternSymbols: [Character] = ["#"]
   ) {
     self.textPattern = textPattern
-    self.patternSymbol = patternSymbol
+    self.patternSymbols = patternSymbols
   }
   
   // MARK: - TextFormatter
@@ -45,12 +45,20 @@ open class PlaceholderTextFormatter: TextFormatter, TextUnformatter {
     
     while patternIndex < textPattern.count && unformattedIndex < unformattedText.count {
       guard let patternCharacter = textPattern.characterAt(patternIndex) else { break }
-      if patternCharacter == patternSymbol {
-        if let unformattedCharacter = unformattedText.characterAt(unformattedIndex) {
-          formatted.append(unformattedCharacter)
+        
+        var found = false
+        for symbol in patternSymbols {
+            if patternCharacter == symbol {
+              if let unformattedCharacter = unformattedText.characterAt(unformattedIndex) {
+                formatted.append(unformattedCharacter)
+              }
+              unformattedIndex += 1
+                found = true
+                break
+            }
         }
-        unformattedIndex += 1
-      } else {
+        
+      if !found {
         formatted.append(patternCharacter)
       }
       patternIndex += 1
